@@ -41,7 +41,7 @@ namespace SearchBackend
                         currentURL = WebBFS.Dequeue();
                     }
 
-                    Console.WriteLine("Crawling " + currentURL);
+                    //Console.WriteLine("Crawling " + currentURL);
                     WebRequest request = WebRequest.Create(currentURL);
 
                     IAsyncResult result = request.BeginGetResponse((IAsyncResult v) => 
@@ -59,6 +59,10 @@ namespace SearchBackend
                             }
 
                             html = Parser.SanitizeHtml(html);
+
+                            string content = Parser.GetContent(html);
+
+                            Console.WriteLine(content);
 
                             IEnumerable<string> urls = Parser.GetURLS(html);
 
@@ -107,7 +111,7 @@ namespace SearchBackend
                             _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
                                 
                         }
-                        catch(Exception e)
+                        catch(Exception ex)
                         {
                             return;
                         }

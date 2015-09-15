@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,6 +39,14 @@ namespace SearchBackend
 
             html = regex.Replace(html, "");
 
+            // Remove all comments
+            var nocomments = new Regex("<!--.*?-->", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            html = nocomments.Replace(html, "");
+
+            // Convert tabs to spaces
+            html = Regex.Replace(html, @"\t", " ");
+
             string acceptable = "link|a href|a";
             string stringPattern = @"</?(?(?=" + acceptable + @")notag|[a-zA-Z0-9]+)(?:\s[a-zA-Z0-9\-]+=?(?:(["",']?).*?\1?)?)*\s*/?>";
             return Regex.Replace(html, stringPattern, "");
@@ -46,7 +55,21 @@ namespace SearchBackend
         // This method scans through the HTML and returns all the plain text no html tags
         public static string GetContent(string HTML)
         {
-            return null;
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(HTML);
+
+            var root = doc.DocumentNode;
+            var sb = new StringBuilder();
+            foreach (var node in root.DescendantsAndSelf())
+            {
+                if (!node.HasChildNodes)
+                {
+                    string text = node.InnerText;
+                    if (!string.IsNullOrEmpty(text))
+                        sb.AppendLine(text.Trim());
+                }
+            }
+            return sb.ToString();
         }
 
         // This method runs through the content and builds a list of known keywords and their counts
