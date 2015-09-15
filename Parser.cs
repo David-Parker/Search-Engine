@@ -42,5 +42,17 @@ namespace SearchBackend
             string stringPattern = @"</?(?(?=" + acceptable + @")notag|[a-zA-Z0-9]+)(?:\s[a-zA-Z0-9\-]+=?(?:(["",']?).*?\1?)?)*\s*/?>";
             return Regex.Replace(html, stringPattern, "");
         }
+
+        // This method scans through the HTML and returns all the plain text no html tags
+        public static string GetContent(string HTML)
+        {
+            return null;
+        }
+
+        // This method runs through the content and builds a list of known keywords and their counts
+        public static Dictionary<string, int> GetKeywords(string HTML)
+        {
+            return null;
+        }
     }
 }

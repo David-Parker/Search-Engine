@@ -14,20 +14,20 @@ namespace SearchBackend
     public class Crawler
     {
         private string _start;
-        private Dictionary<string, int> seenURLS;
-        private Logger logger;
+        private Dictionary<string, int> _seenURLS;
+        private Logger _logger;
         public Crawler(string StartURL)
         {
             _start = StartURL;
-            seenURLS = new Dictionary<string, int>();
-            logger = new Logger("crawler.txt", 30);
+            _seenURLS = new Dictionary<string, int>();
+            _logger = new Logger("crawler.txt", 30);
         }
 
         // Starts at the starting URL and continues crawling links and updating database
         public void Crawl()
         {
             Queue<string> WebBFS = new Queue<string>();
-            logger.Initialize();
+            _logger.Initialize();
             WebBFS.Enqueue(_start);
 
             while(true)
@@ -88,13 +88,13 @@ namespace SearchBackend
                                         localSeen.Add(nextURL, true);
                                     }
                                     // Check if URL exists in our set
-                                    if(seenURLS.ContainsKey(nextURL))
+                                    if(_seenURLS.ContainsKey(nextURL))
                                     {
-                                        seenURLS[nextURL]++;
+                                        _seenURLS[nextURL]++;
                                     }
                                     else
                                     {
-                                        seenURLS.Add(nextURL, 1);
+                                        _seenURLS.Add(nextURL, 1);
                                         WebBFS.Enqueue(nextURL);
                                     }
                                 }
@@ -104,7 +104,7 @@ namespace SearchBackend
                         catch(WebException we)
                         {
                             // Log failure
-                            logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
+                            _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
                                 
                         }
                         catch(Exception e)
