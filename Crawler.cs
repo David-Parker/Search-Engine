@@ -51,14 +51,16 @@ namespace SearchBackend
                             WebResponse response = request.EndGetResponse(v);
                             Stream data = response.GetResponseStream();
                             string html = String.Empty;
+                            Dictionary<string, bool> localSeen = new Dictionary<string, bool>();
+
                             using (StreamReader sr = new StreamReader(data))
                             {
                                 html = sr.ReadToEnd();
                             }
 
-                            html = SanitizeHtml(html);
+                            html = Parser.SanitizeHtml(html);
 
-                            IEnumerable<string> urls = GetURLS(html);
+                            IEnumerable<string> urls = Parser.GetURLS(html);
 
                             // Enqueue all the sites found from links
                             foreach (string s in urls)
@@ -76,6 +78,15 @@ namespace SearchBackend
                                 }
                                 lock (WebBFS)
                                 {
+                                    // Don't allow a site to incrase the page rank of a url more than once
+                                    if (localSeen.ContainsKey(nextURL))
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        localSeen.Add(nextURL, true);
+                                    }
                                     // Check if URL exists in our set
                                     if(seenURLS.ContainsKey(nextURL))
                                     {
@@ -108,39 +119,6 @@ namespace SearchBackend
                     continue;
                 }
             }
-        }
-        private static IEnumerable<string> GetURLS(string html)
-        {
-            List<string> list = new List<String>();
-
-            var reg = new Regex("(<a|link)[^>]* href=\"([^\"]*)");
-
-            foreach (Match match in reg.Matches(html))
-            {
-                string newurl = match.Groups[2].ToString();
-                if (newurl.EndsWith("/"))
-                {
-                    newurl = newurl.Remove(newurl.Length - 1);
-                }
-
-                list.Add(newurl);
-            }
-
-            return list;
-
-        }
-
-        // Remove unwanted data from the HTML
-        private static string SanitizeHtml(string html)
-        {
-            // Remove all Javascript and CSS
-            var regex = new Regex("(\\<script(.+?)\\</script\\>)|(\\<style(.+?)\\</style\\>)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-            html = regex.Replace(html, "");
-
-            string acceptable = "link|a href|a";
-            string stringPattern = @"</?(?(?=" + acceptable + @")notag|[a-zA-Z0-9]+)(?:\s[a-zA-Z0-9\-]+=?(?:(["",']?).*?\1?)?)*\s*/?>";
-            return Regex.Replace(html, stringPattern, "");
         }
     }
 }
