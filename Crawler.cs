@@ -41,7 +41,7 @@ namespace SearchBackend
                         currentURL = WebBFS.Dequeue();
                     }
 
-                    //Console.WriteLine("Crawling " + currentURL);
+                    Console.WriteLine("Crawling " + currentURL);
                     WebRequest request = WebRequest.Create(currentURL);
 
                     IAsyncResult result = request.BeginGetResponse((IAsyncResult v) => 
@@ -62,7 +62,9 @@ namespace SearchBackend
 
                             string content = Parser.GetContent(html);
 
-                            Console.WriteLine(content);
+                            //Debug.WriteLine(content);
+
+                            Parser.GetKeywords(content);
 
                             IEnumerable<string> urls = Parser.GetURLS(html);
 

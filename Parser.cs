@@ -69,13 +69,210 @@ namespace SearchBackend
                         sb.AppendLine(text.Trim());
                 }
             }
-            return sb.ToString();
+
+            string ret = sb.ToString();
+
+            // Remove non alpha characters
+            Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+            ret = rgx.Replace(ret, "");
+
+            return ret;
         }
 
         // This method runs through the content and builds a list of known keywords and their counts
         public static Dictionary<string, int> GetKeywords(string HTML)
         {
-            return null;
+            Dictionary<string, bool> blacklist = new Dictionary<string, bool>()
+            {
+                {"a", true},
+                {"aboard", true},
+                {"about", true},
+                {"above", true},
+                {"across", true},
+                {"after", true},
+                {"against", true},
+                {"all", true},
+                {"along", true},
+                {"although", true},
+                {"amid", true},
+                {"among", true},
+                {"and", true},
+                {"another", true},
+                {"anti", true},
+                {"any", true},
+                {"anybody", true},
+                {"anyone", true},
+                {"anything", true},
+                {"around", true},
+                {"as", true},
+                {"assuming", true},
+                {"at", true},
+                {"be", true},
+                {"because", true},
+                {"been", true},
+                {"before", true},
+                {"behind", true},
+                {"being", true},
+                {"below", true},
+                {"beneath", true},
+                {"beside", true},
+                {"besides", true},
+                {"between", true},
+                {"beyond", true},
+                {"both", true},
+                {"but", true},
+                {"by", true},
+                {"concerning", true},
+                {"considering", true},
+                {"despite", true},
+                {"down", true},
+                {"during", true},
+                {"each", true},
+                {"either", true},
+                {"even", true},
+                {"everybody", true},
+                {"everyone", true},
+                {"everything", true},
+                {"except", true},
+                {"excepting", true},
+                {"excluding", true},
+                {"few", true},
+                {"following", true},
+                {"for", true},
+                {"from", true},
+                {"he", true},
+                {"her", true},
+                {"hers", true},
+                {"herself", true},
+                {"him", true},
+                {"himself", true},
+                {"his", true},
+                {"how", true},
+                {"I", true},
+                {"if", true},
+                {"in", true},
+                {"inside", true},
+                {"into", true},
+                {"is", true},
+                {"it", true},
+                {"its", true},
+                {"itself", true},
+                {"lest", true},
+                {"like", true},
+                {"many", true},
+                {"me", true},
+                {"mine", true},
+                {"minus", true},
+                {"more", true},
+                {"most", true},
+                {"much", true},
+                {"my", true},
+                {"myself", true},
+                {"near", true},
+                {"neither", true},
+                {"nobody", true},
+                {"none", true},
+                {"noone", true},
+                {"nothing", true},
+                {"of", true},
+                {"off", true},
+                {"on", true},
+                {"only", true},
+                {"onto", true},
+                {"opposite", true},
+                {"other", true},
+                {"others", true},
+                {"our", true},
+                {"ours", true},
+                {"ourselves", true},
+                {"outside", true},
+                {"over", true},
+                {"past", true},
+                {"per", true},
+                {"plus", true},
+                {"provided", true},
+                {"rather", true},
+                {"regarding", true},
+                {"round", true},
+                {"save", true},
+                {"several", true},
+                {"she", true},
+                {"since", true},
+                {"so", true},
+                {"some", true},
+                {"somebody", true},
+                {"someone", true},
+                {"something", true},
+                {"than", true},
+                {"that", true},
+                {"the", true},
+                {"their", true},
+                {"theirs", true},
+                {"them", true},
+                {"themselves", true},
+                {"these", true},
+                {"they", true},
+                {"this", true},
+                {"those", true},
+                {"though", true},
+                {"through", true},
+                {"to", true},
+                {"toward", true},
+                {"towards", true},
+                {"under", true},
+                {"underneath", true},
+                {"unless", true},
+                {"unlike", true},
+                {"until", true},
+                {"up", true},
+                {"upon", true},
+                {"us", true},
+                {"versus", true},
+                {"via", true},
+                {"was", true},
+                {"we", true},
+                {"what", true},
+                {"whatever", true},
+                {"whereas", true},
+                {"whether", true},
+                {"which", true},
+                {"whichever", true},
+                {"while", true},
+                {"who", true},
+                {"whoever", true},
+                {"whom", true},
+                {"whomever", true},
+                {"whose", true},
+                {"why", true},
+                {"with", true},
+                {"within", true},
+                {"without", true},
+                {"you", true},
+                {"your", true},
+                {"yours", true},
+                {"yourself", true},
+                {"yourselves", true}
+            };
+
+            Dictionary<string, int> table = new Dictionary<string, int>();
+
+            foreach(string word in HTML.Split(' '))
+            {
+                // Non-blacklisted word
+                if(!blacklist.ContainsKey(word))
+                {
+                    if(table.ContainsKey(word))
+                    {
+                        table[word]++;
+                    }
+                    else
+                    {
+                        table.Add(word, 1);
+                    }
+                }
+
+            }
+            return table;
         }
     }
 }
