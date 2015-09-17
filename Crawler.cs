@@ -16,11 +16,13 @@ namespace SearchBackend
         private string _start;
         private Dictionary<string, int> _seenURLS;
         private Logger _logger;
-        public Crawler(string StartURL)
+        private SQLConnector _sc;
+        public Crawler(string StartURL, string username, string password)
         {
             _start = StartURL;
             _seenURLS = new Dictionary<string, int>();
             _logger = new Logger("crawler.txt", 30);
+            _sc = new SQLConnector(String.Format("Server=tcp:o5vep5em15.database.windows.net,1433;Database=Search_Engine;User ID={0}@o5vep5em15;Password={1};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;", username, password));
         }
 
         // Starts at the starting URL and continues crawling links and updating database
@@ -60,12 +62,6 @@ namespace SearchBackend
 
                             html = Parser.SanitizeHtml(html);
 
-                            string content = Parser.GetContent(html);
-
-                            //Debug.WriteLine(content);
-
-                            Parser.GetKeywords(content);
-
                             IEnumerable<string> urls = Parser.GetURLS(html);
 
                             // Enqueue all the sites found from links
@@ -94,7 +90,7 @@ namespace SearchBackend
                                         localSeen.Add(nextURL, true);
                                     }
                                     // Check if URL exists in our set
-                                    if(_seenURLS.ContainsKey(nextURL))
+                                    if (_seenURLS.ContainsKey(nextURL))
                                     {
                                         _seenURLS[nextURL]++;
                                     }
@@ -106,6 +102,13 @@ namespace SearchBackend
                                 }
                                 //Console.WriteLine(nextURL);
                             }
+
+                            // Parse content and write to SQL database
+                            string content = Parser.GetContent(html);
+
+                            Dictionary<string, int> keywords = Parser.GetKeywords(content);
+
+                            //_sc.AddKeywords(currentURL, keywords);
                         }
                         catch(WebException we)
                         {
@@ -120,7 +123,11 @@ namespace SearchBackend
 
                     }, null);
                 }
-                catch(Exception e)
+                catch (System.InvalidOperationException ex)
+                {
+                    continue;
+                }
+                catch (Exception e)
                 {
                     continue;
                 }

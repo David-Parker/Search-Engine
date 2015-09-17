@@ -13,7 +13,13 @@ namespace SearchBackend
     {
         static void Main(string[] args)
         {
-            Crawler crawler = new Crawler("http://yahoo.com" );
+            Console.WriteLine("Username: ");
+            string username = Console.ReadLine();
+
+            Console.WriteLine("Password: ");
+            string password = Console.ReadLine();
+
+            Crawler crawler = new Crawler("http://yahoo.com", username, password);
             crawler.Crawl();
         }
     }
