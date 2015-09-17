@@ -108,7 +108,7 @@ namespace SearchBackend
 
                             Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
-                            //_sc.AddKeywords(currentURL, keywords);
+                            _sc.AddKeywords(currentURL, keywords);
                         }
                         catch(WebException we)
                         {
