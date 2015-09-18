@@ -29,13 +29,24 @@ namespace SearchBackend
 
             if (keywords.Count > 0)
             {
-                SqlCommand cmd = new SqlCommand(SQL, sq);
-
-                lock(sq)
+                try
                 {
-                    sq.Open();
-                    cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.ExecuteNonQuery();
+                    SqlCommand cmd = new SqlCommand(SQL, sq);
+
+                    lock (sq)
+                    {
+                        sq.Open();
+                        cmd.CommandType = System.Data.CommandType.Text;
+                        cmd.ExecuteNonQuery();
+                        sq.Close();
+                    }
+                }
+                catch
+                {
+                    return;
+                }
+                finally
+                {
                     sq.Close();
                 }
             }

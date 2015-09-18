@@ -100,7 +100,6 @@ namespace SearchBackend
                                         WebBFS.Enqueue(nextURL);
                                     }
                                 }
-                                //Console.WriteLine(nextURL);
                             }
 
                             // Parse content and write to SQL database
@@ -116,19 +115,22 @@ namespace SearchBackend
                             _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
                                 
                         }
-                        catch(Exception ex)
+                        catch(Exception we)
                         {
+                            _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
                             return;
                         }
 
                     }, null);
                 }
-                catch (System.InvalidOperationException ex)
+                catch (System.InvalidOperationException we)
                 {
+                    _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
                     continue;
                 }
-                catch (Exception e)
+                catch (Exception we)
                 {
+                    _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
                     continue;
                 }
             }
