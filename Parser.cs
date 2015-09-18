@@ -25,6 +25,9 @@ namespace SearchBackend
                     newurl = newurl.Remove(newurl.Length - 1);
                 }
 
+                // Remove query strings
+                newurl = Regex.Replace(newurl, "[?&].*", "");
+
                 list.Add(newurl);
             }
 

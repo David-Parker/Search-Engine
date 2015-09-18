@@ -16,13 +16,15 @@ namespace SearchBackend
             sq = new SqlConnection(ConnectionString);
         }
 
-        public void AddKeywords(string url, Dictionary<string, int> keywords)
+        public void AddKeywordsAndRank(string url, Dictionary<string, int> keywords, int pagerank)
         {
             string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
             foreach (var hash in keywords)
             {
                 SQL += String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key);
             }
+
+            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
 
             // Remove last comma and add a semi colon.
             SQL = SQL.Substring(0, SQL.Length - 1) + ';';
@@ -32,12 +34,16 @@ namespace SearchBackend
                 try
                 {
                     SqlCommand cmd = new SqlCommand(SQL, sq);
+                    SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
 
                     lock (sq)
                     {
                         sq.Open();
                         cmd.CommandType = System.Data.CommandType.Text;
                         cmd.ExecuteNonQuery();
+
+                        cmdRank.CommandType = System.Data.CommandType.Text;
+                        cmdRank.ExecuteNonQuery();
                         sq.Close();
                     }
                 }
@@ -51,5 +57,6 @@ namespace SearchBackend
                 }
             }
         }
+
     }
 }
