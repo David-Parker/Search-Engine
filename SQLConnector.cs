@@ -18,11 +18,22 @@ namespace SearchBackend
 
         public void AddKeywordsAndRank(string url, Dictionary<string, int> keywords, int pagerank)
         {
+            // Change to String Builder
+            //string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
+            //foreach (var hash in keywords)
+            //{
+            //    SQL += String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key);
+            //}
+
             string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
+            StringBuilder sb = new StringBuilder(SQL);
+
             foreach (var hash in keywords)
             {
-                SQL += String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key);
+                sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key));
             }
+
+            SQL = sb.ToString();
 
             string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
 
@@ -55,6 +66,32 @@ namespace SearchBackend
                 {
                     sq.Close();
                 }
+            }
+        }
+
+        public void TEST_Rank(string url, int count)
+        {
+            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, count);
+
+            try
+            {
+                SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
+
+                lock (sq)
+                {
+                    sq.Open();
+                    cmdRank.CommandType = System.Data.CommandType.Text;
+                    cmdRank.ExecuteNonQuery();
+                    sq.Close();
+                }
+            }
+            catch
+            {
+                return;
+            }
+            finally
+            {
+                sq.Close();
             }
         }
 

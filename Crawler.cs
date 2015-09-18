@@ -103,11 +103,12 @@ namespace SearchBackend
                             }
 
                             // Parse content and write to SQL database
-                            string content = Parser.GetContent(html);
+                            //string content = Parser.GetContent(html);
 
-                            Dictionary<string, int> keywords = Parser.GetKeywords(content);
+                            //Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
-                            _sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
+                            //_sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
+                            _sc.TEST_Rank(currentURL, _seenURLS[currentURL]);
                         }
                         catch(WebException we)
                         {
