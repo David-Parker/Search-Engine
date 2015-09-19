@@ -22,7 +22,7 @@ namespace SearchBackend
             _start = StartURL;
             _seenURLS = new Dictionary<string, int>();
             _logger = new Logger("crawler.txt", 30);
-            _sc = new SQLConnector(String.Format("Server=tcp:o5vep5em15.database.windows.net,1433;Database=Search_Engine;User ID={0}@o5vep5em15;Password={1};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;", username, password));
+            _sc = new SQLConnector(String.Format("Server=tcp:o5vep5em15.database.windows.net,1433;Database=Search_Engine;User ID={0}@o5vep5em15;Password={1};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True;", username, password));
         }
 
         // Starts at the starting URL and continues crawling links and updating database
@@ -103,12 +103,12 @@ namespace SearchBackend
                             }
 
                             // Parse content and write to SQL database
-                            //string content = Parser.GetContent(html);
+                            string content = Parser.GetContent(html);
 
-                            //Dictionary<string, int> keywords = Parser.GetKeywords(content);
+                            Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
-                            //_sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
-                            _sc.TEST_Rank(currentURL, _seenURLS[currentURL]);
+                            _sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
+                            //_sc.TEST_Rank(currentURL, _seenURLS[currentURL]);
                         }
                         catch(WebException we)
                         {

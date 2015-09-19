@@ -11,19 +11,16 @@ namespace SearchBackend
     public class SQLConnector
     {
         private SqlConnection sq;
+        private static string connection;
         public SQLConnector(string ConnectionString)
         {
-            sq = new SqlConnection(ConnectionString);
+            connection = ConnectionString;
+            //sq = new SqlConnection(ConnectionString);
         }
 
         public void AddKeywordsAndRank(string url, Dictionary<string, int> keywords, int pagerank)
         {
-            // Change to String Builder
-            //string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
-            //foreach (var hash in keywords)
-            //{
-            //    SQL += String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key);
-            //}
+            SqlConnection sq = new SqlConnection(connection);
 
             string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
             StringBuilder sb = new StringBuilder(SQL);
@@ -47,16 +44,13 @@ namespace SearchBackend
                     SqlCommand cmd = new SqlCommand(SQL, sq);
                     SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
 
-                    lock (sq)
-                    {
-                        sq.Open();
-                        cmd.CommandType = System.Data.CommandType.Text;
-                        cmd.ExecuteNonQuery();
+                    sq.Open();
+                    cmd.CommandType = System.Data.CommandType.Text;
+                    cmd.ExecuteNonQuery();
 
-                        cmdRank.CommandType = System.Data.CommandType.Text;
-                        cmdRank.ExecuteNonQuery();
-                        sq.Close();
-                    }
+                    cmdRank.CommandType = System.Data.CommandType.Text;
+                    cmdRank.ExecuteNonQuery();
+                    sq.Close();
                 }
                 catch
                 {
@@ -69,21 +63,20 @@ namespace SearchBackend
             }
         }
 
+        // Method for benchmarking SQL performance
         public void TEST_Rank(string url, int count)
         {
+            SqlConnection sq = new SqlConnection(connection);
             string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, count);
 
             try
             {
                 SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
 
-                lock (sq)
-                {
-                    sq.Open();
-                    cmdRank.CommandType = System.Data.CommandType.Text;
-                    cmdRank.ExecuteNonQuery();
-                    sq.Close();
-                }
+                sq.Open();
+                cmdRank.CommandType = System.Data.CommandType.Text;
+                cmdRank.ExecuteNonQuery();
+                sq.Close();
             }
             catch
             {
