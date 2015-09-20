@@ -10,7 +10,6 @@ namespace SearchBackend
     // The purpose of this class is to connect to a SQL database and push keywords and page rank data
     public class SQLConnector
     {
-        private SqlConnection sq;
         private static string connection;
         public SQLConnector(string ConnectionString)
         {
@@ -24,41 +23,43 @@ namespace SearchBackend
 
             string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
             StringBuilder sb = new StringBuilder(SQL);
-
-            foreach (var hash in keywords)
-            {
-                sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key));
-            }
-
-            SQL = sb.ToString();
-
-            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
-
-            // Remove last comma and add a semi colon.
-            SQL = SQL.Substring(0, SQL.Length - 1) + ';';
-
+            int i = 1;
             if (keywords.Count > 0)
             {
-                try
+                foreach (var hash in keywords)
                 {
-                    SqlCommand cmd = new SqlCommand(SQL, sq);
-                    SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
+                    // Flush the next thousand rows (SQL limitation only allows 1,000 inserts per INSERT INTO)
+                    if ((i % 1000 == 0) || (i == keywords.Count))
+                    {
+                        try
+                        {
+                            SQL = sb.ToString();
+                            // Remove last comma and add a semi colon.
+                            SQL = SQL.Substring(0, SQL.Length - 1) + ';';
 
-                    sq.Open();
-                    cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.ExecuteNonQuery();
+                            SqlCommand cmd = new SqlCommand(SQL, sq);
+                            //SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
 
-                    cmdRank.CommandType = System.Data.CommandType.Text;
-                    cmdRank.ExecuteNonQuery();
-                    sq.Close();
-                }
-                catch
-                {
-                    return;
-                }
-                finally
-                {
-                    sq.Close();
+                            sq.Open();
+                            cmd.CommandType = System.Data.CommandType.Text;
+                            cmd.ExecuteNonQuery();
+
+                            //cmdRank.CommandType = System.Data.CommandType.Text;
+                            //cmdRank.ExecuteNonQuery();
+                            sq.Close();
+                        }
+                        finally
+                        {
+                            sq.Close();
+                        }
+                        SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
+                        sb = new StringBuilder(SQL);
+                    }
+                    else
+                    {
+                        sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key));
+                    }
+                    i++;
                 }
             }
         }
