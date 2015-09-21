@@ -38,21 +38,11 @@ namespace SearchBackend
         public static string SanitizeHtml(string html)
         {
             // Remove all Javascript and CSS
-            var regex = new Regex("(\\<script(.+?)\\</script\\>)|(\\<style(.+?)\\</style\\>)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-            html = regex.Replace(html, "");
-
-            // Remove all comments
-            var nocomments = new Regex("<!--.*?-->", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-            html = nocomments.Replace(html, "");
-
-            // Convert tabs to spaces
-            html = Regex.Replace(html, @"\t", " ");
-
+            var regex = new Regex("(\\<script(.+?)\\</script\\>)|(\\<style(.+?)\\</style\\>)|(<!--.*?-->)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             string acceptable = "link|a href|a";
-            string stringPattern = @"</?(?(?=" + acceptable + @")notag|[a-zA-Z0-9]+)(?:\s[a-zA-Z0-9\-]+=?(?:(["",']?).*?\1?)?)*\s*/?>";
-            return Regex.Replace(html, stringPattern, "");
+            string myregex = "(\\<script(.+?)\\</script\\>)|(\\<style(.+?)\\</style\\>)|(<!--.*?-->)|(</?(?(?=" + acceptable + @")notag|[a-zA-Z0-9]+)(?:\s[a-zA-Z0-9\-]+=?(?:(["",']?).*?\1?)?)*\s*/?>)";
+            return Regex.Replace(html, myregex, "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
         }
 
         // This method scans through the HTML and returns all the plain text no html tags

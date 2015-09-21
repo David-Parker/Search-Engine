@@ -14,53 +14,50 @@ namespace SearchBackend
         public SQLConnector(string ConnectionString)
         {
             connection = ConnectionString;
-            //sq = new SqlConnection(ConnectionString);
         }
 
         public void AddKeywordsAndRank(string url, Dictionary<string, int> keywords, int pagerank)
         {
-            SqlConnection sq = new SqlConnection(connection);
+            
 
-            string SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
+            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
+            string SQL = SQLRank + "INSERT INTO Keywords(url,keyword,k_count,date,GUID) VALUES";
+
             StringBuilder sb = new StringBuilder(SQL);
             int i = 1;
             if (keywords.Count > 0)
             {
-                foreach (var hash in keywords)
+                using (SqlConnection sq = new SqlConnection(connection))
                 {
-                    // Flush the next thousand rows (SQL limitation only allows 1,000 inserts per INSERT INTO)
-                    if ((i % 1000 == 0) || (i == keywords.Count))
+                    sq.Open();
+                    foreach (var hash in keywords)
                     {
-                        try
+                        // Flush the next thousand rows (SQL limitation only allows 1,000 inserts per INSERT INTO)
+                        if ((i % 1000 == 0) || (i == keywords.Count))
                         {
+                            // Convert string builder object to string
                             SQL = sb.ToString();
+
                             // Remove last comma and add a semi colon.
                             SQL = SQL.Substring(0, SQL.Length - 1) + ';';
 
                             SqlCommand cmd = new SqlCommand(SQL, sq);
-                            //SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
+                            SqlCommand cmdRank = new SqlCommand(SQLRank, sq);
 
-                            sq.Open();
                             cmd.CommandType = System.Data.CommandType.Text;
                             cmd.ExecuteNonQuery();
 
-                            //cmdRank.CommandType = System.Data.CommandType.Text;
-                            //cmdRank.ExecuteNonQuery();
-                            sq.Close();
+                            SQL = "INSERT INTO Keywords(url,keyword,k_count,date,GUID) VALUES";
+                            sb = new StringBuilder(SQL);
                         }
-                        finally
+                        else
                         {
-                            sq.Close();
+                            sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}', '{4}'),", url, hash.Key, hash.Value, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), url + "_" + hash.Key));
                         }
-                        SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
-                        sb = new StringBuilder(SQL);
+                        i++;
                     }
-                    else
-                    {
-                        sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key));
-                    }
-                    i++;
                 }
+                    
             }
         }
 

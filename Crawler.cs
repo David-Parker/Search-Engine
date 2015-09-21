@@ -108,7 +108,6 @@ namespace SearchBackend
                             Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
                             _sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
-                            //_sc.TEST_Rank(currentURL, _seenURLS[currentURL]);
                         }
                         catch(WebException we)
                         {
