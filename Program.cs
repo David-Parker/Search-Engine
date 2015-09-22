@@ -13,6 +13,7 @@ namespace SearchBackend
     {
         static void Main(string[] args)
         {
+
             Console.WriteLine("Username: ");
             string username = Console.ReadLine();
 

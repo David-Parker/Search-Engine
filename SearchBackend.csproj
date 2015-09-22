@@ -50,6 +50,7 @@
     <Compile Include="Crawler.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Parser.cs" />
+    <Compile Include="ProducerBlock.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLConnector.cs" />

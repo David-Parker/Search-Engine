@@ -40,7 +40,15 @@ namespace SearchBackend
 
                     lock (WebBFS)
                     {
+                        // Don't let queue grow indefinitely
                         currentURL = WebBFS.Dequeue();
+                        if(WebBFS.Count >= ProducerBlock.high)
+                        {
+                            while (WebBFS.Count >= ProducerBlock.low)
+                            {
+                                WebBFS.Dequeue();
+                            }
+                        }
                     }
 
                     Console.WriteLine("Crawling " + currentURL);
@@ -63,6 +71,12 @@ namespace SearchBackend
                             html = Parser.SanitizeHtml(html);
 
                             IEnumerable<string> urls = Parser.GetURLS(html);
+
+                            // Once the queue reaches the max, let it drain
+                            //if (WebBFS.Count >= ProducerBlock.high)
+                            //{
+                            //    Monitor.Wait(ProducerBlock.GetReference());
+                            //}
 
                             // Enqueue all the sites found from links
                             foreach (string s in urls)
