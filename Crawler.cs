@@ -28,6 +28,9 @@ namespace SearchBackend
         // Starts at the starting URL and continues crawling links and updating database
         public void Crawl()
         {
+            // Populate hash with urls from the database
+            _seenURLS = _sc.GetVisited();
+
             Queue<string> WebBFS = new Queue<string>();
             _logger.Initialize();
             WebBFS.Enqueue(_start);

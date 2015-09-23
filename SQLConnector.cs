@@ -18,8 +18,6 @@ namespace SearchBackend
 
         public void AddKeywordsAndRank(string url, Dictionary<string, int> keywords, int pagerank)
         {
-            
-
             string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
             string SQL = SQLRank + "INSERT INTO Keywords(url,keyword,k_count,date,GUID) VALUES";
 
@@ -61,6 +59,32 @@ namespace SearchBackend
             }
         }
 
+        public Dictionary<string, int> GetVisited()
+        {
+            Dictionary<string, int> ret = new Dictionary<string, int>();
+            string SQL = "select * from Page_rank;";
+            using (SqlConnection sq = new SqlConnection(connection))
+            {
+                SqlCommand cmd = new SqlCommand(SQL, sq);
+                cmd.CommandType = System.Data.CommandType.Text;
+                sq.Open();
+
+                using(SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while(reader.Read())
+                    {
+                        string url = reader["url"].ToString();
+                        if (!ret.ContainsKey(url))
+                        {
+                            ret.Add(url, (int) reader["P_rank"]);
+                        }
+                    }
+                }
+            }
+
+            return ret;
+        }
+
         // Method for benchmarking SQL performance
         public void TEST_Rank(string url, int count)
         {
@@ -85,6 +109,8 @@ namespace SearchBackend
                 sq.Close();
             }
         }
+
+
 
     }
 }
