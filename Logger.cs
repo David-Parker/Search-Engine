@@ -29,6 +29,7 @@ namespace SearchBackend
 
         public void Log(string data)
         {
+            return;
             lock(_errors)
             {
                 _errors += data;
