@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace SearchBackend
 {
@@ -57,6 +58,85 @@ namespace SearchBackend
                 }
                     
             }
+        }
+
+        public void BulkInsert(string url, Dictionary<string, int> keywords, int pagerank)
+        {
+            DataTable table = new DataTable();
+
+            DataRow row;
+            DataView view;
+
+            // URL Column
+            DataColumn url_column;
+            url_column = new DataColumn();
+            url_column.DataType = Type.GetType("System.String");
+            url_column.ColumnName = "url";
+            table.Columns.Add(url_column);
+
+            // Keyword Column
+            DataColumn keyword_column;
+            keyword_column = new DataColumn();
+            keyword_column.DataType = Type.GetType("System.String");
+            keyword_column.ColumnName = "keyword";
+            table.Columns.Add(keyword_column);
+
+            // K_count Column
+            DataColumn k_count_column;
+            k_count_column = new DataColumn();
+            k_count_column.DataType = Type.GetType("System.Int32");
+            k_count_column.ColumnName = "k_count";
+            table.Columns.Add(k_count_column);
+
+            // Date column
+            DataColumn date_column;
+            date_column = new DataColumn();
+            date_column.DataType = Type.GetType("System.DateTime");
+            date_column.ColumnName = "date";
+            table.Columns.Add(date_column);
+
+            // GUID column
+            DataColumn guid_column;
+            guid_column = new DataColumn();
+            guid_column.DataType = Type.GetType("System.String");
+            guid_column.ColumnName = "guid";
+            table.Columns.Add(guid_column);
+
+            foreach(var hash in keywords)
+            {
+                row = table.NewRow();
+                row["url"] = url;
+                row["keyword"] = hash.Key;
+                row["k_count"] = hash.Value;
+                row["date"] = DateTime.Now;
+                row["guid"] = url + "_" + hash.Key;
+                table.Rows.Add(row);
+            }
+
+            using (SqlConnection sq = new SqlConnection(connection))
+            {
+                sq.Open();
+
+                // Add the pagerank
+                this.AddRank(url, pagerank, sq);
+
+                using (SqlBulkCopy sbc = new SqlBulkCopy(sq))
+                {
+                    sbc.DestinationTableName = "dbo.Keywords";
+                    sbc.WriteToServer(table);
+                }
+            }
+        }
+
+        // Assumes that the connection is open
+        public void AddRank(string url, int pagerank, SqlConnection sq)
+        {
+            string SQL = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
+
+            SqlCommand cmd = new SqlCommand(SQL, sq);
+
+            cmd.CommandType = System.Data.CommandType.Text;
+            cmd.ExecuteNonQuery();
         }
 
         public Dictionary<string, int> GetVisited()
