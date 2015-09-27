@@ -21,7 +21,7 @@ namespace SearchBackend
         {
             _start = StartURL;
             _seenURLS = new Dictionary<string, int>();
-            _logger = new Logger("crawler.txt", 30);
+            _logger = new Logger("crawler.txt", 1, true);
             _sc = new SQLConnector(String.Format("Server=tcp:o5vep5em15.database.windows.net,1433;Database=Search_Engine;User ID={0}@o5vep5em15;Password={1};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True;", username, password));
         }
 
@@ -34,8 +34,9 @@ namespace SearchBackend
             Queue<string> WebBFS = new Queue<string>();
             _logger.Initialize();
             WebBFS.Enqueue(_start);
+            var log = new System.IO.StreamWriter("urls.txt", true);
 
-            while(true)
+            while (true)
             {
                 try
                 {
@@ -45,7 +46,11 @@ namespace SearchBackend
                     {
                         // Don't let queue grow indefinitely
                         currentURL = WebBFS.Dequeue();
-                        if(WebBFS.Count >= ProducerBlock.high)
+
+                        log.WriteLine(currentURL + Environment.NewLine);
+
+                        log.Flush();
+                        if (WebBFS.Count >= ProducerBlock.high)
                         {
                             while (WebBFS.Count >= ProducerBlock.low)
                             {
@@ -54,7 +59,8 @@ namespace SearchBackend
                         }
                     }
 
-                    Console.WriteLine("Crawling " + currentURL);
+                    //Console.WriteLine("Crawling " + currentURL);
+
                     WebRequest request = WebRequest.Create(currentURL);
 
                     IAsyncResult result = request.BeginGetResponse((IAsyncResult v) => 
@@ -97,7 +103,7 @@ namespace SearchBackend
                                 }
                                 lock (WebBFS)
                                 {
-                                    // Don't allow a site to incrase the page rank of a url more than once
+                                    // Don't allow a site to increase the page rank of a url more than once
                                     if (localSeen.ContainsKey(nextURL))
                                     {
                                         continue;
@@ -124,7 +130,7 @@ namespace SearchBackend
 
                             Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
-                            _sc.BulkInsert(currentURL, keywords, _seenURLS[currentURL]);
+                            _sc.BulkInsert(currentURL, keywords, _seenURLS[currentURL], localSeen);
 
                             //_sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
                         }

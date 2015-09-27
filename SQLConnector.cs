@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
+using SearchBackend.Exceptions;
 
 namespace SearchBackend
 {
@@ -60,12 +61,12 @@ namespace SearchBackend
             }
         }
 
-        public void BulkInsert(string url, Dictionary<string, int> keywords, int pagerank)
+        // This method will get overloaded with complexity, but SqlConnection.Open() is too expensive to open seperately in multiple methods
+        public void BulkInsert(string url, Dictionary<string, int> keywords, int pagerank, Dictionary<string,bool> ranks)
         {
             DataTable table = new DataTable();
 
             DataRow row;
-            DataView view;
 
             // URL Column
             DataColumn url_column;
@@ -117,8 +118,11 @@ namespace SearchBackend
             {
                 sq.Open();
 
-                // Add the pagerank
+                // Add the pagerank for the current page
                 this.AddRank(url, pagerank, sq);
+
+                // Update ranks for other pages
+                this.UpdateRanks(ranks, sq, url);
 
                 using (SqlBulkCopy sbc = new SqlBulkCopy(sq))
                 {
@@ -126,17 +130,6 @@ namespace SearchBackend
                     sbc.WriteToServer(table);
                 }
             }
-        }
-
-        // Assumes that the connection is open
-        public void AddRank(string url, int pagerank, SqlConnection sq)
-        {
-            string SQL = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
-
-            SqlCommand cmd = new SqlCommand(SQL, sq);
-
-            cmd.CommandType = System.Data.CommandType.Text;
-            cmd.ExecuteNonQuery();
         }
 
         public Dictionary<string, int> GetVisited()
@@ -190,7 +183,51 @@ namespace SearchBackend
             }
         }
 
+        // Assumes that the connection is open
+        private void UpdateRanks(Dictionary<string, bool> ranks, SqlConnection sq, string currentUrl)
+        {
+            if(sq.State == ConnectionState.Closed)
+            {
+                throw new SQLConnectionException("Connection cannot be closed in UpdateRanks.");
+            }
 
+            string SQL = "update page_rank set p_rank = p_rank + 1 where url = '{0}';";
+            StringBuilder sb = new StringBuilder();
 
+            foreach (var rank in ranks)
+            {
+                // Don't double dip for the current url that is being added
+                if (rank.Key != currentUrl)
+                {
+                    sb.Append(string.Format(SQL, rank.Key));
+                }
+            }
+
+            SQL = sb.ToString();
+
+            // Don't run a query for an empty string
+            if (SQL == "") return;
+
+            SqlCommand cmd = new SqlCommand(SQL, sq);
+
+            cmd.CommandType = System.Data.CommandType.Text;
+            cmd.ExecuteNonQuery();
+        }
+
+        // Assumes that the connection is open
+        private void AddRank(string url, int pagerank, SqlConnection sq)
+        {
+            if (sq.State == ConnectionState.Closed)
+            {
+                throw new SQLConnectionException("Connection cannot be closed in AddRank.");
+            }
+
+            string SQL = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
+
+            SqlCommand cmd = new SqlCommand(SQL, sq);
+
+            cmd.CommandType = System.Data.CommandType.Text;
+            cmd.ExecuteNonQuery();
+        }
     }
 }

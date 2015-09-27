@@ -13,35 +13,42 @@ namespace SearchBackend
         private string _errors;
         private Stopwatch _sw;
         private int _delay;
+        private bool _on;
 
-        public Logger(string filepath, int delay)
+        public Logger(string filepath, int delay, bool on)
         {
             _writer = new System.IO.StreamWriter(filepath, true);
             _sw = new Stopwatch();
             this._delay = delay;
             _errors = "";
+            _on = on;
         }
 
         public void Initialize()
         {
-            _sw.Start();
+            if(_on)
+            {
+                _sw.Start();
+            }
         }
 
         public void Log(string data)
         {
-            return;
-            lock(_errors)
+            if(_on)
             {
-                _errors += data;
-            }
-            if (_sw.Elapsed.Seconds > _delay)
-            {
-                lock (_writer)
+                lock (_errors)
                 {
-                    _writer.WriteLine(_errors);
-                    _writer.Flush();
-                    _sw.Restart();
-                    _errors = "";
+                    _errors += data;
+                }
+                if (_sw.Elapsed.Seconds >= _delay)
+                {
+                    lock (_writer)
+                    {
+                        _writer.WriteLine(_errors);
+                        _writer.Flush();
+                        _sw.Restart();
+                        _errors = "";
+                    }
                 }
             }
         }

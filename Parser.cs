@@ -47,6 +47,7 @@ namespace SearchBackend
 
         // This method scans through the HTML and returns all the plain text no html tags
         public static string GetContent(string HTML)
+            
         {
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(HTML);
@@ -64,6 +65,10 @@ namespace SearchBackend
             }
 
             string ret = sb.ToString();
+
+            //Console.WriteLine(HTML);
+
+            //string ret = Regex.Replace(HTML, "<([^>\"]*|\"[^\"]*\")*>", "");
 
             // Remove non alpha characters
             Regex rgx = new Regex("[^a-zA-Z0-9 -]");
@@ -251,16 +256,19 @@ namespace SearchBackend
 
             foreach(string word in HTML.Split(' '))
             {
+                if (word == "") continue;
+
+                string wordLower = word.ToLower();
                 // Non-blacklisted word
-                if(!blacklist.ContainsKey(word))
+                if (!blacklist.ContainsKey(wordLower))
                 {
-                    if(table.ContainsKey(word))
+                    if(table.ContainsKey(wordLower))
                     {
-                        table[word]++;
+                        table[wordLower]++;
                     }
                     else
                     {
-                        table.Add(word, 1);
+                        table.Add(wordLower, 1);
                     }
                 }
 

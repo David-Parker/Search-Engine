@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Crawler.cs" />
+    <Compile Include="Exceptions\SQLConnectionException.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ProducerBlock.cs" />
