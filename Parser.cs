@@ -11,6 +11,8 @@ namespace SearchBackend
     // Parser class is responsible for getting the data out of the HTML
     public static class Parser
     {
+        public static Regex contentRegex = new Regex(@"<([^>""]*|""[^""]*"")*>", RegexOptions.Compiled);
+
         public static IEnumerable<string> GetURLS(string html)
         {
             List<string> list = new List<String>();
@@ -50,6 +52,7 @@ namespace SearchBackend
             
         {
             HtmlDocument doc = new HtmlDocument();
+            doc.OptionFixNestedTags = true;
             doc.LoadHtml(HTML);
 
             var root = doc.DocumentNode;
@@ -68,8 +71,9 @@ namespace SearchBackend
 
             //Console.WriteLine(HTML);
 
-            //string ret = Regex.Replace(HTML, "<([^>\"]*|\"[^\"]*\")*>", "");
+            //string ret = contentRegex.Replace(HTML, "");
 
+            //Console.WriteLine(ret);
             // Remove non alpha characters
             Regex rgx = new Regex("[^a-zA-Z0-9 -]");
             ret = rgx.Replace(ret, "");

@@ -13,7 +13,7 @@ namespace SearchBackend
         private string _errors;
         private Stopwatch _sw;
         private int _delay;
-        private bool _on;
+        public bool _on;
 
         public Logger(string filepath, int delay, bool on)
         {

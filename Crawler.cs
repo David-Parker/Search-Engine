@@ -21,7 +21,7 @@ namespace SearchBackend
         {
             _start = StartURL;
             _seenURLS = new Dictionary<string, int>();
-            _logger = new Logger("crawler.txt", 1, true);
+            _logger = new Logger("crawler.txt", 1, false);
             _sc = new SQLConnector(String.Format("Server=tcp:o5vep5em15.database.windows.net,1433;Database=Search_Engine;User ID={0}@o5vep5em15;Password={1};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True;", username, password));
         }
 
@@ -34,7 +34,7 @@ namespace SearchBackend
             Queue<string> WebBFS = new Queue<string>();
             _logger.Initialize();
             WebBFS.Enqueue(_start);
-            var log = new System.IO.StreamWriter("urls.txt", true);
+            //var log = new System.IO.StreamWriter("urls.txt", true);
 
             while (true)
             {
@@ -47,9 +47,9 @@ namespace SearchBackend
                         // Don't let queue grow indefinitely
                         currentURL = WebBFS.Dequeue();
 
-                        log.WriteLine(currentURL + Environment.NewLine);
+                        //log.WriteLine(currentURL + Environment.NewLine);
 
-                        log.Flush();
+                        //log.Flush();
                         if (WebBFS.Count >= ProducerBlock.high)
                         {
                             while (WebBFS.Count >= ProducerBlock.low)
@@ -59,7 +59,7 @@ namespace SearchBackend
                         }
                     }
 
-                    //Console.WriteLine("Crawling " + currentURL);
+                    Console.WriteLine("Crawling " + currentURL);
 
                     WebRequest request = WebRequest.Create(currentURL);
 
@@ -80,12 +80,6 @@ namespace SearchBackend
                             html = Parser.SanitizeHtml(html);
 
                             IEnumerable<string> urls = Parser.GetURLS(html);
-
-                            // Once the queue reaches the max, let it drain
-                            //if (WebBFS.Count >= ProducerBlock.high)
-                            //{
-                            //    Monitor.Wait(ProducerBlock.GetReference());
-                            //}
 
                             // Enqueue all the sites found from links
                             foreach (string s in urls)
@@ -131,18 +125,22 @@ namespace SearchBackend
                             Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
                             _sc.BulkInsert(currentURL, keywords, _seenURLS[currentURL], localSeen);
-
-                            //_sc.AddKeywordsAndRank(currentURL, keywords, _seenURLS[currentURL]);
                         }
                         catch(WebException we)
                         {
                             // Log failure
-                            _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
-                                
+                            if (_logger._on)
+                            {
+                                _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
+                            }
+
                         }
                         catch(Exception we)
                         {
-                            _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
+                            if(_logger._on)
+                            {
+                                _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
+                            }
                             return;
                         }
 
@@ -150,12 +148,18 @@ namespace SearchBackend
                 }
                 catch (System.InvalidOperationException we)
                 {
-                    _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
+                    if(_logger._on)
+                    {
+                        _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
+                    }
                     continue;
                 }
                 catch (Exception we)
                 {
-                    _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
+                    if (_logger._on)
+                    {
+                        _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
+                    }
                     continue;
                 }
             }
