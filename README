@@ -1,0 +1,9 @@
+Webcrawler program written in C# by David Parker
+
+The purpose of this webcrawler is to crawl the internet and keep keyword counts of all the words on the page and to assign a pagerank
+
+This crawler has been heavily optimized and needs to connect to a SQL server with tables created from Create_Tables.sql
+
+External Dependencies: HTML Agility Pack 4.7.0 With stackoverflow patch: https://code.google.com/archive/p/abot/issues/77
+
+Add the dll to your project references

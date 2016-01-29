@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace SearchBackend
 {
-    class Logger
+    public class Logger
     {
         private System.IO.StreamWriter _writer;
         private string _errors;

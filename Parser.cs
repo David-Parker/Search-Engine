@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SearchBackend
 {
@@ -52,8 +53,17 @@ namespace SearchBackend
             
         {
             HtmlDocument doc = new HtmlDocument();
-            doc.OptionFixNestedTags = true;
-            doc.LoadHtml(HTML);
+            doc.OptionMaxNestedChildNodes = 10000;
+
+            try
+            {
+                doc.LoadHtml(HTML);
+            }
+            // There were too many nested HTML tags on this site
+            catch(ApplicationException)
+            {
+                return "";
+            }
 
             var root = doc.DocumentNode;
             var sb = new StringBuilder();
@@ -69,11 +79,6 @@ namespace SearchBackend
 
             string ret = sb.ToString();
 
-            //Console.WriteLine(HTML);
-
-            //string ret = contentRegex.Replace(HTML, "");
-
-            //Console.WriteLine(ret);
             // Remove non alpha characters
             Regex rgx = new Regex("[^a-zA-Z0-9 -]");
             ret = rgx.Replace(ret, "");

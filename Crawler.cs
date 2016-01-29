@@ -15,7 +15,7 @@ namespace SearchBackend
     {
         private string _start;
         private Dictionary<string, int> _seenURLS;
-        private Logger _logger;
+        public Logger _logger;
         private SQLConnector _sc;
         public Crawler(string StartURL, string username, string password)
         {
@@ -34,7 +34,6 @@ namespace SearchBackend
             Queue<string> WebBFS = new Queue<string>();
             _logger.Initialize();
             WebBFS.Enqueue(_start);
-            //var log = new System.IO.StreamWriter("urls.txt", true);
 
             while (true)
             {
@@ -47,9 +46,6 @@ namespace SearchBackend
                         // Don't let queue grow indefinitely
                         currentURL = WebBFS.Dequeue();
 
-                        //log.WriteLine(currentURL + Environment.NewLine);
-
-                        //log.Flush();
                         if (WebBFS.Count >= ProducerBlock.high)
                         {
                             while (WebBFS.Count >= ProducerBlock.low)
@@ -63,7 +59,7 @@ namespace SearchBackend
 
                     WebRequest request = WebRequest.Create(currentURL);
 
-                    IAsyncResult result = request.BeginGetResponse((IAsyncResult v) => 
+                    IAsyncResult result = request.BeginGetResponse((IAsyncResult v) =>
                     {
                         try
                         {
@@ -91,7 +87,7 @@ namespace SearchBackend
                                 {
                                     nextURL = currentURL + s;
                                 }
-                                else if(!s.StartsWith("http"))
+                                else if (!s.StartsWith("http"))
                                 {
                                     nextURL = currentURL + "/" + s;
                                 }
@@ -124,9 +120,11 @@ namespace SearchBackend
 
                             Dictionary<string, int> keywords = Parser.GetKeywords(content);
 
-                            _sc.BulkInsert(currentURL, keywords, _seenURLS[currentURL], localSeen);
+                            // No keywords in the case of an HTML overflow
+                            if(keywords.Count > 0)
+                                _sc.BulkInsert(currentURL, keywords, _seenURLS[currentURL], localSeen);
                         }
-                        catch(WebException we)
+                        catch (WebException we)
                         {
                             // Log failure
                             if (_logger._on)
@@ -135,9 +133,9 @@ namespace SearchBackend
                             }
 
                         }
-                        catch(Exception we)
+                        catch (Exception we)
                         {
-                            if(_logger._on)
+                            if (_logger._on)
                             {
                                 _logger.Log(DateTime.Now + " " + we.Message + " " + "(" + currentURL + ")" + Environment.NewLine);
                             }
@@ -148,7 +146,7 @@ namespace SearchBackend
                 }
                 catch (System.InvalidOperationException we)
                 {
-                    if(_logger._on)
+                    if (_logger._on)
                     {
                         _logger.Log(DateTime.Now + " " + we.Message + Environment.NewLine);
                     }

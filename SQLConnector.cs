@@ -13,15 +13,17 @@ namespace SearchBackend
     public class SQLConnector
     {
         private static string connection;
+        private Logger _logger;
         public SQLConnector(string ConnectionString)
         {
             connection = ConnectionString;
+            _logger = new Logger("crawler-sql.txt", 1, false);
         }
 
         public void AddKeywordsAndRank(string url, Dictionary<string, int> keywords, int pagerank)
         {
-            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
-            string SQL = SQLRank + "INSERT INTO Keywords(url,keyword,k_count,date,GUID) VALUES";
+            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank,date) VALUES ('{0}', {1}, '{2}');", url, pagerank, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            string SQL = SQLRank + "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
 
             StringBuilder sb = new StringBuilder(SQL);
             int i = 1;
@@ -47,12 +49,12 @@ namespace SearchBackend
                             cmd.CommandType = System.Data.CommandType.Text;
                             cmd.ExecuteNonQuery();
 
-                            SQL = "INSERT INTO Keywords(url,keyword,k_count,date,GUID) VALUES";
+                            SQL = "INSERT INTO Keywords(url,keyword,k_count,GUID) VALUES";
                             sb = new StringBuilder(SQL);
                         }
                         else
                         {
-                            sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}', '{4}'),", url, hash.Key, hash.Value, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), url + "_" + hash.Key));
+                            sb.Append(String.Format(" ('{0}', '{1}', {2}, '{3}'),", url, hash.Key, hash.Value, url + "_" + hash.Key));
                         }
                         i++;
                     }
@@ -90,11 +92,11 @@ namespace SearchBackend
             table.Columns.Add(k_count_column);
 
             // Date column
-            DataColumn date_column;
-            date_column = new DataColumn();
-            date_column.DataType = Type.GetType("System.DateTime");
-            date_column.ColumnName = "date";
-            table.Columns.Add(date_column);
+            //DataColumn date_column;
+            //date_column = new DataColumn();
+            //date_column.DataType = Type.GetType("System.DateTime");
+            //date_column.ColumnName = "date";
+            //table.Columns.Add(date_column);
 
             // GUID column
             DataColumn guid_column;
@@ -109,7 +111,7 @@ namespace SearchBackend
                 row["url"] = url;
                 row["keyword"] = hash.Key;
                 row["k_count"] = hash.Value;
-                row["date"] = DateTime.Now;
+                //row["date"] = DateTime.Now;
                 row["guid"] = url + "_" + hash.Key;
                 table.Rows.Add(row);
             }
@@ -119,16 +121,24 @@ namespace SearchBackend
                 sq.Open();
 
                 // Add the pagerank for the current page
-                this.AddRank(url, pagerank, sq);
-
-                // Update ranks for other pages
-                this.UpdateRanks(ranks, sq, url);
-
-                using (SqlBulkCopy sbc = new SqlBulkCopy(sq))
+                try
                 {
-                    sbc.DestinationTableName = "dbo.Keywords";
-                    sbc.WriteToServer(table);
+                    this.AddRank(url, pagerank, sq);
+
+                    // Update ranks for other pages
+                    this.UpdateRanks(ranks, sq, url);
+
+                    using (SqlBulkCopy sbc = new SqlBulkCopy(sq))
+                    {
+                        sbc.DestinationTableName = "dbo.Keywords";
+                        sbc.WriteToServer(table);
+                    }
                 }
+                catch(Exception we)
+                {
+                    _logger.Log(DateTime.Now + " " + we.Message + " " + Environment.NewLine);
+                }
+                
             }
         }
 
@@ -162,7 +172,7 @@ namespace SearchBackend
         public void TEST_Rank(string url, int count)
         {
             SqlConnection sq = new SqlConnection(connection);
-            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, count);
+            string SQLRank = String.Format("INSERT INTO Page_Rank(url,P_rank,date) VALUES ('{0}', {1}, '{2}');", url, count, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
             try
             {
@@ -221,8 +231,7 @@ namespace SearchBackend
             {
                 throw new SQLConnectionException("Connection cannot be closed in AddRank.");
             }
-
-            string SQL = String.Format("INSERT INTO Page_Rank(url,P_rank) VALUES ('{0}', {1});", url, pagerank);
+            string SQL = String.Format("INSERT INTO Page_Rank(url,P_rank,date) VALUES ('{0}', {1}, '{2}');", url, pagerank, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
             SqlCommand cmd = new SqlCommand(SQL, sq);
 
