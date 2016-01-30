@@ -48,7 +48,6 @@ namespace SearchBackend
 
                         if (WebBFS.Count >= ProducerBlock.high)
                         {
-                            Console.WriteLine("Dumping queue" + Environment.NewLine);
                             while (WebBFS.Count >= ProducerBlock.low)
                             {
                                 WebBFS.Dequeue();
@@ -56,7 +55,7 @@ namespace SearchBackend
                         }
                     }
 
-                    //Console.WriteLine("Crawling " + currentURL);
+                    Console.WriteLine("Crawling " + currentURL);
 
                     WebRequest request = WebRequest.Create(currentURL);
 

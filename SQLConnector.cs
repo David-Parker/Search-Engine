@@ -116,6 +116,9 @@ namespace SearchBackend
                 table.Rows.Add(row);
             }
 
+            // We are done with keywords
+            keywords = null;
+
             using (SqlConnection sq = new SqlConnection(connection))
             {
                 sq.Open();
