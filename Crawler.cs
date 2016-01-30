@@ -48,6 +48,7 @@ namespace SearchBackend
 
                         if (WebBFS.Count >= ProducerBlock.high)
                         {
+                            Console.WriteLine("Dumping queue" + Environment.NewLine);
                             while (WebBFS.Count >= ProducerBlock.low)
                             {
                                 WebBFS.Dequeue();
@@ -55,7 +56,7 @@ namespace SearchBackend
                         }
                     }
 
-                    Console.WriteLine("Crawling " + currentURL);
+                    //Console.WriteLine("Crawling " + currentURL);
 
                     WebRequest request = WebRequest.Create(currentURL);
 
@@ -119,6 +120,10 @@ namespace SearchBackend
                             string content = Parser.GetContent(html);
 
                             Dictionary<string, int> keywords = Parser.GetKeywords(content);
+
+                            // We are done with the large HTML string, have GC collect it
+                            content = null;
+                            html = null;
 
                             // No keywords in the case of an HTML overflow
                             if(keywords.Count > 0)

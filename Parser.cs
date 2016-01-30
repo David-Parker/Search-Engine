@@ -81,6 +81,7 @@ namespace SearchBackend
 
             // Remove non alpha characters
             Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+
             ret = rgx.Replace(ret, "");
 
             return ret;

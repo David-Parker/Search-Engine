@@ -10,7 +10,7 @@ namespace SearchBackend
     {
         private static Object block;
         public static int high = 100000;
-        public static int low = 90000;
+        public static int low = 50000;
 
         // Singleton
         public static Object GetReference()

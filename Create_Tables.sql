@@ -17,5 +17,5 @@ Create table Page_Rank(
 );
 
 create nonclustered index idx_keywords on keywords (keyword);
-create nonclustered index idx_keywords_url on keywords (url);
+-- create nonclustered index idx_keywords_url on keywords (url);
 create nonclustered index idx_url on page_rank (url);
