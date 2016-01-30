@@ -20,7 +20,7 @@ namespace SearchBackend
             Console.WriteLine("Password: ");
             string password = Console.ReadLine();
 
-            Crawler crawler = new Crawler("https://www.reddit.com", username, password);
+            Crawler crawler = new Crawler("https://www.reddit.com", username, password,-1);
             crawler.Crawl();
         }
     }

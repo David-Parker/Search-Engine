@@ -17,12 +17,18 @@ namespace SearchBackend
         private Dictionary<string, int> _seenURLS;
         public Logger _logger;
         private SQLConnector _sc;
-        public Crawler(string StartURL, string username, string password)
+        private int _runtime;
+
+        // StartURL specifies what site to start the crawl on
+        // Username and password of the SQL database connection
+        // Runtime specifies how many minutes until the program terminates, -1 for no termination
+        public Crawler(string StartURL, string username, string password, int runtime)
         {
             _start = StartURL;
             _seenURLS = new Dictionary<string, int>();
             _logger = new Logger("crawler.txt", 1, false);
             _sc = new SQLConnector(String.Format("Server=tcp:o5vep5em15.database.windows.net,1433;Database=Search_Engine;User ID={0}@o5vep5em15;Password={1};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True;", username, password));
+            _runtime = runtime;
         }
 
         // Starts at the starting URL and continues crawling links and updating database
@@ -31,12 +37,17 @@ namespace SearchBackend
             // Populate hash with urls from the database
             _seenURLS = _sc.GetVisited();
 
+            Stopwatch sw = new Stopwatch();
             Queue<string> WebBFS = new Queue<string>();
             _logger.Initialize();
             WebBFS.Enqueue(_start);
+            sw.Start();
 
             while (true)
             {
+                // Exit after 30 minutes
+                if (_runtime != -1 && sw.Elapsed.Minutes >= _runtime)
+                    Environment.Exit(0);
                 try
                 {
                     string currentURL;

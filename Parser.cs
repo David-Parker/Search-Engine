@@ -77,6 +77,8 @@ namespace SearchBackend
                 }
             }
 
+            HTML = null;
+
             string ret = sb.ToString();
 
             // Remove non alpha characters
